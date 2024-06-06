@@ -72,17 +72,28 @@ eval "$(zoxide init --cmd cd zsh)"
 eval "$(gix completions -s zsh)"
 
 # Aliases
-alias ls="eza --icons=always"
+if type exa > /dev/null; then
+  alias ls="eza --icons=always"
+fi
+
 alias ll="ls -lh"
 alias lla="ll -a"
 alias llg="ll -g"
 alias tree="ls -T"
-alias cat="bat -pp"
-alias less="bat"
-alias du="dust"
 
-alias yt="yt-dlp --downloader aria2c --downloader-args '-c -j 3 -x 3 -s 3 -k 1M' --proxy 127.0.0.1:8085 --embed-metadata --embed-thumbnail --embed-chapters"
-alias ytm="yt -f ba[ext=m4a] --ppa 'ThumbnailsConvertor+ffmpeg_o:-c:v png -vf crop=\"ih\"'"
+if type bat > /dev/null; then
+  alias cat="bat -pp"
+  alias less="bat"
+fi
+
+if type dust > /dev/null; then
+  alias du="dust"
+fi
+
+if type yt-dlp > /dev/null; then
+  alias yt="yt-dlp --downloader aria2c --downloader-args '-c -j 3 -x 3 -s 3 -k 1M' --proxy 127.0.0.1:8085 --embed-metadata --embed-thumbnail --embed-chapters"
+  alias ytm="yt -f ba[ext=m4a] --ppa 'ThumbnailsConvertor+ffmpeg_o:-c:v png -vf crop=\"ih\"'"
+fi
 
 alias gc="__git_clone_repo"
 alias gcd="__git_clone_and_change_dir"
