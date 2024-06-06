@@ -1,0 +1,24 @@
+import = ["~/.config/alacritty/catppuccin_mocha.toml"]
+
+[font]
+size = 10
+
+[font.bold]
+family = "GeistMono Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "GeistMono Nerd Font"
+style = "Italic"
+
+[font.normal]
+family = "GeistMono Nerd Font"
+style = "Regular"
+
+[window]
+dynamic_padding = true
+
+[window.dimensions]
+columns = 210
+lines = 30
+
