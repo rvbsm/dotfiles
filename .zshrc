@@ -8,7 +8,6 @@ fi
 # Environment variables
 ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
 CODE_HOME=$HOME/Code
-export GEODE_SDK="$HOME/Documents/Geode"
 
 if type cargo > /dev/null; then
   CARGO_HOME="$HOME/.cargo"
