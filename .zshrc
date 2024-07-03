@@ -66,12 +66,10 @@ bindkey "^[[A" history-search-backward
 bindkey "^[[B" history-search-forward
 
 # Evals
-eval "$(fzf --zsh)"
 eval "$(zoxide init --cmd cd zsh)"
-eval "$(gix completions -s zsh)"
 
 # Aliases
-if type exa > /dev/null; then
+if type eza > /dev/null; then
   alias ls="eza --icons=always"
 fi
 
@@ -91,7 +89,7 @@ fi
 
 if type yt-dlp > /dev/null; then
   alias yt="yt-dlp --downloader aria2c --downloader-args '-c -j 3 -x 3 -s 3 -k 1M' --proxy 127.0.0.1:8085 --embed-metadata --embed-thumbnail --embed-chapters"
-  alias ytm="yt -f ba[ext=m4a] --ppa 'ThumbnailsConvertor+ffmpeg_o:-c:v png -vf crop=\"ih\"'"
+  alias ytm="yt -f 'ba[ext=m4a]' --ppa 'ThumbnailsConvertor+ffmpeg_o:-c:v png -vf crop=\"ih\"'"
 fi
 
 alias gc="__git_clone_repo"
@@ -120,10 +118,10 @@ __git_clone_repo() {
     
     mkdir -p "$repo_path"
 
-    >&2 printf "Cloning %s/%s into %s...\n" "$user" "$repo" "$repo_path"
+    # >&2 printf "Cloning %s/%s into %s...\n" "$user" "$repo" "$repo_path"
 
     shift
-    gix clone $@ "$repo_url" "$repo_path"
+    git clone $@ "$repo_url" "$repo_path"
     printf "%s" "$repo_path"
   else
     >&2 echo "Format: git clone <repository> [args]"
