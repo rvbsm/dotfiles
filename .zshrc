@@ -1,10 +1,3 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
-
 # Environment variables
 ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
 CODE_HOME=$HOME/Code
@@ -39,8 +32,10 @@ if [ ! -d "$ZINIT_HOME" ]; then
 fi
 source "$ZINIT_HOME/zinit.zsh"
 
-zinit ice depth=1; zinit light romkatv/powerlevel10k
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh # edit: p10k configure
+zinit ice as"command" from"gh-r" \
+	  atclone"./starship init zsh > init.zsh; ./starship completions zsh > _starship" \
+	  atpull"%atclone" src"init.zsh"
+zinit light starship/starship
 
 zinit light zsh-users/zsh-syntax-highlighting
 zinit light zsh-users/zsh-completions
@@ -56,10 +51,9 @@ zinit cdreplay -q
 
 # Completions
 zstyle ":completion:*" matcher-list "m:{a-z}={A-Za-z}"
-# zstyle ":completion:*" list-colors "${(s.:.)LS_COLORS}"
-# zstyle ":completion:*" menu no
-# zstyle ":fzf-tab:complete:cd:*" fzf-preview  "ls --color $realpath"
-# zstyle ":fzf-tab:complete:__zoxide_z:*" fzf-preview "ls --color $realpath"
+zstyle ":completion:*" list-colors ${(s.:.)LS_COLORS}
+zstyle ":completion:*" menu no
+zstyle ":fzf-tab:complete:cd:*" fzf-preview "eza -1 --color=always $realpath"
 
 # Bindings
 bindkey "^[[A" history-search-backward
