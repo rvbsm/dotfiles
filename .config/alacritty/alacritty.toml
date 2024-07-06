@@ -1,4 +1,4 @@
-import = ["~/.config/alacritty/catppuccin_mocha.toml"]
+import = ['/home/rvbsm/.config/alacritty/catppuccin_latte.toml']
 
 [font]
 size = 10
