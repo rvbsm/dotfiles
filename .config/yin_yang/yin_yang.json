@@ -2,7 +2,7 @@
     "version": 3.3,
     "running": false,
     "dark_mode": false,
-    "mode": "manual",
+    "mode": "sunset to sunrise",
     "coordinates": [
         50.0,
         35.0
@@ -51,9 +51,9 @@
             "dark_theme": "firefox-compact-dark@mozilla.org"
         },
         "vs code": {
-            "enabled": false,
-            "light_theme": "Default Light Modern",
-            "dark_theme": "Default Dark Modern"
+            "enabled": true,
+            "light_theme": "Catppuccin Latte",
+            "dark_theme": "Catppuccin Mocha"
         },
         "onlyoffice": {
             "enabled": false,
@@ -72,8 +72,8 @@
         },
         "custom": {
             "enabled": true,
-            "light_theme": "THEME_VARIANT='latte' \"$HOME/.config/yin_yang/toggle.sh\"",
-            "dark_theme": "THEME_VARIANT='mocha' \"$HOME/.config/yin_yang/toggle.sh\""
+            "light_theme": "\"$HOME/.config/yin_yang/toggle.sh\" light",
+            "dark_theme": "\"$HOME/.config/yin_yang/toggle.sh\" dark"
         },
         "notification": {
             "enabled": false,

@@ -82,7 +82,7 @@ if type dust > /dev/null; then
 fi
 
 if type yt-dlp > /dev/null; then
-  alias yt="yt-dlp --downloader aria2c --downloader-args '-c -j 3 -x 3 -s 3 -k 1M' --proxy 127.0.0.1:8085 --embed-metadata --embed-thumbnail --embed-chapters"
+  alias yt="yt-dlp --proxy 127.0.0.1:8888 --embed-metadata --embed-thumbnail --embed-chapters"
   alias ytm="yt -f 'ba[ext=m4a]' --ppa 'ThumbnailsConvertor+ffmpeg_o:-c:v png -vf crop=\"ih\"'"
 fi
 
