@@ -1,17 +1,3 @@
-# Environment variables
-ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
-CODE_HOME=$HOME/Code
-
-if type cargo > /dev/null; then
-  CARGO_HOME="$HOME/.cargo"
-  PATH="$PATH:$CARGO_HOME/bin"
-fi
-
-if type pnpm > /dev/null; then
-  PNPM_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/pnpm"
-  PATH="$PATH:$PNPM_HOME"
-fi
-
 # ZSH config
 HISTSIZE=5000
 HISTFILE=~/.zsh_history
@@ -26,15 +12,41 @@ setopt hist_save_no_dups
 setopt hist_find_no_dups
 setopt rematchpcre
 
+# Environment variables
+CODE_HOME="$HOME/Code"
+
+PATH="$PATH:$HOME/.local/bin"
+
+if type cargo >/dev/null; then
+  CARGO_HOME="$HOME/.cargo"
+  PATH="$PATH:$CARGO_HOME/bin"
+fi
+
+if type pnpm >/dev/null; then
+  PNPM_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/pnpm"
+  PATH="$PATH:$PNPM_HOME"
+fi
+
+if type go >/dev/null; then
+  GOPATH="$HOME/.go"
+  PATH="$PATH:$GOPATH/bin"
+fi
+
+BUN_INSTALL="$HOME/.bun"
+if [[ -d "$BUN_INSTALL" ]]; then
+  PATH="$PATH:$BUN_INSTALL/bin"
+fi
+
 # Zinit
+ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
 if [ ! -d "$ZINIT_HOME" ]; then
   git clone git@github.com:zdharma-continuum/zinit.git "$ZINIT_HOME"
 fi
 source "$ZINIT_HOME/zinit.zsh"
 
-zinit ice as"command" from"gh-r" \
-	  atclone"./starship init zsh > init.zsh; ./starship completions zsh > _starship" \
-	  atpull"%atclone" src"init.zsh"
+zinit ice as'command' from'gh-r' \
+	  atclone'./starship init zsh > init.zsh; ./starship completions zsh > _starship' \
+	  atpull'%atclone' src'init.zsh'
 zinit light starship/starship
 
 zinit light zsh-users/zsh-syntax-highlighting
@@ -50,83 +62,99 @@ autoload -U compinit && compinit
 zinit cdreplay -q
 
 # Completions
-zstyle ":completion:*" matcher-list "m:{a-z}={A-Za-z}"
-zstyle ":completion:*" list-colors ${(s.:.)LS_COLORS}
-zstyle ":completion:*" menu no
-zstyle ":fzf-tab:complete:cd:*" fzf-preview "eza -1 --color=always $realpath"
+zstyle ':completion:*:git-checkout:*' sort false
+# zstyle ':completion:*:descriptions' format '[%d]'
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always $realpath'
+zstyle ':fzf-tab:*' switch-group '<' '>'
 
 # Bindings
-bindkey "^[[A" history-search-backward
-bindkey "^[[B" history-search-forward
+bindkey '^[[A' history-search-backward
+bindkey '^[[B' history-search-forward
 
 # Evals
 eval "$(zoxide init --cmd cd zsh)"
+eval "$(direnv hook zsh)"
 
 # Aliases
 if type eza > /dev/null; then
-  alias ls="eza --icons=always"
+  alias ls='eza --icons=always'
 fi
 
-alias ll="ls -lh"
-alias lla="ll -a"
-alias llg="ll -g"
-alias tree="ls -T"
+alias ll='ls -lh'
+alias lla='ll -a'
+alias llg='ll -g'
+alias tree='ls -T'
 
-if type bat > /dev/null; then
-  alias cat="bat -pp"
-  alias less="bat"
+if type bat >/dev/null; then
+  alias cat='bat -pp'
+  alias less='bat'
 fi
 
-if type dust > /dev/null; then
-  alias du="dust"
+if type dust >/dev/null; then
+  alias du='dust'
 fi
-
-if type yt-dlp > /dev/null; then
-  alias yt="yt-dlp --proxy 127.0.0.1:8888 --embed-metadata --embed-thumbnail --embed-chapters"
-  alias ytm="yt -f 'ba[ext=m4a]' --ppa 'ThumbnailsConvertor+ffmpeg_o:-c:v png -vf crop=\"ih\"'"
-fi
-
-alias gc="__git_clone_repo"
-alias gcd="__git_clone_and_change_dir"
 
 # Util functions
-__git_clone_repo() {
-  local git_repo_re="(?:^(?:git@|https?://)?([\w\.@]+)[/:])?([\w,\-,\_]+)/([\w,\-,\_]+)(?:\.git){0,1}/{0,1}$"
+gtr::clone() {
+  if [[ ! -d "$CODE_HOME" ]]; then
+    >&2 echo '$CODE_HOME is not a directory'
+    return 1
+  fi
 
-  if [[ $1 =~ $git_repo_re ]]; then
+  local git_repo_re="(?:^(?:git@|https?://)?([\w\.@]+)[/:])?([\w,\-,\_]+)/([\w,\-,\_]+)(?:\.git){0,1}/{0,1}$"
+  if [[ "$1" =~ "$git_repo_re" ]]; then
     local host="${match[1]:-github.com}"
     local user="${match[2]}"
     local repo="${match[3]}"
 
-    if [[ ! -d "$CODE_HOME" ]]; then
-      >&2 echo "\$CODE_HOME is not a directory"
-      return 1
+    if [ $(whoami) = "$user" ]; then
+      local repo_path="$CODE_HOME/$repo"
+    else
+      local repo_path="$CODE_HOME/$host/$user/$repo"
     fi
 
-    local repo_url="git@$host:$user/$repo.git"
-    local repo_path="$CODE_HOME/$host/$user/$repo"
-    if [[ -d "$repo_path" ]]; then
-      printf "%s" "$repo_path"
-      return 1
+    if [[ ! -d "$repo_path" ]]; then
+      shift
+      mkdir -p "$repo_path"
+
+      git clone $@ "git@$host:$user/$repo.git" "$repo_path"
     fi
-    
-    mkdir -p "$repo_path"
 
-    # >&2 printf "Cloning %s/%s into %s...\n" "$user" "$repo" "$repo_path"
-
-    shift
-    git clone $@ "$repo_url" "$repo_path"
-    printf "%s" "$repo_path"
+    echo "$repo_path"
   else
-    >&2 echo "Format: git clone <repository> [args]"
+    >&2 echo 'Format: git clone <repository> [args]'
   fi
 }
+alias grc='gtr::clone'
 
-__git_clone_and_change_dir() {
-  local repo_path=$(gc $@)
+gtr::cd() {
+  local repo_path=$(gtr::clone $@)
   
   if [[ -d "$repo_path" ]]; then
-    cd "$repo_path"
+    cd -- "$repo_path"
   fi
 }
+alias grd='gtr::cd'
 
+gtr::list_repos() {
+  local project_path="$(
+    find "$CODE_HOME" -maxdepth 3 \
+      -not -path '*/.*' \
+      -type d \
+      -exec [ -e '{}/.git' ] ';' \
+      -prune -printf '%T+\t%p\t%P\n' |
+    sort -r |
+    fzf --delimiter '\t' --with-nth 3 --no-multi \
+    --preview '
+      [ -f {2}/README.md ] && \
+        glow --style notty {2}/README.md || \
+        eza --all --oneline --classify --icons=always --colour=always {2}
+    ' |
+    cut -f 2
+  )"
+
+  gtr::cd "$project_path"
+}
+alias grl='gtr::list'
