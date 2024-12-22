@@ -100,37 +100,44 @@ fi
 gtr::clone() {
   if [[ ! -d "$CODE_HOME" ]]; then
     >&2 echo '$CODE_HOME is not a directory'
-    return 1
+    return 2
   fi
 
-  local git_repo_re="(?:^(?:git@|https?://)?([\w\.@]+)[/:])?([\w,\-,\_]+)/([\w,\-,\_]+)(?:\.git){0,1}/{0,1}$"
-  if [[ "$1" =~ "$git_repo_re" ]]; then
-    local host="${match[1]:-github.com}"
-    local user="${match[2]}"
-    local repo="${match[3]}"
+  declare host='github.com'
+  declare user=$(whoami)
+  declare -r repo=$(basename "$1" '.git')
+  if [[ -z "$repo" ]]; then
+    >&2 echo 'What the heck is that repo?'
+    return 2
+  fi
 
-    if [ $(whoami) = "$user" ]; then
-      local repo_path="$CODE_HOME/$repo"
+  declare repo_path="$repo"
+  if [[ "$1" =~ '(?:^(?:git@|https?://)?([\w\.@]+)[/:])?(?:([\w,\-,\_]+)/)([\w,\-,\_]+)(?:\.git)?/?$' ]]; then
+    host="${match[1]:-$host}"
+    user="${match[2]}"
+
+    if [[ "$(whoami)" != "$user" ]]; then
+      repo_path="$host/$user/$repo"
+    fi
+  fi
+
+  if [[ ! -d "$CODE_HOME/$repo_path" ]]; then
+    if read -q "read_response?Clone $repo_path? [y/N]: "; then
+      mkdir -p "$CODE_HOME/$repo_path"
+
+      >&2 echo; shift; git clone $@ "git@$host:$user/$repo.git" "$CODE_HOME/$repo_path"
     else
-      local repo_path="$CODE_HOME/$host/$user/$repo"
+      >&2 echo; return 1
     fi
-
-    if [[ ! -d "$repo_path" ]]; then
-      shift
-      mkdir -p "$repo_path"
-
-      git clone $@ "git@$host:$user/$repo.git" "$repo_path"
-    fi
-
-    echo "$repo_path"
-  else
-    >&2 echo 'Format: git clone <repository> [args]'
   fi
+
+  echo "$CODE_HOME/$repo_path"
 }
 alias grc='gtr::clone'
 
 gtr::cd() {
-  local repo_path=$(gtr::clone $@)
+  declare repo_path
+  repo_path=$(gtr::clone $@) || return $?
   
   if [[ -d "$repo_path" ]]; then
     cd -- "$repo_path"
@@ -138,7 +145,7 @@ gtr::cd() {
 }
 alias grd='gtr::cd'
 
-gtr::list_repos() {
+gtr::list() {
   local project_path="$(
     find "$CODE_HOME" -maxdepth 3 \
       -not -path '*/.*' \
