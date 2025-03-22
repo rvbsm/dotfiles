@@ -1,0 +1,6 @@
+[submodule "alacritty/.config/alacritty/themes"]
+	path = alacritty/.config/alacritty/themes
+	url = git@github.com:alacritty/alacritty-theme.git
+[submodule "bat/.config/bat/themes"]
+	path = bat/.config/bat/themes
+	url = git@github.com:catppuccin/bat.git
